@@ -17,6 +17,9 @@ ARCHS = 386 arm amd64 arm64
 
 all: build-deps compile install test build
 
+docker-local:
+	docker build -t arjunadeltoso/statping-ng:latest --build-arg VERSION=${VERSION} --build-arg COMMIT=${COMMIT} .
+
 test: clean compile
 	go test -v -p=1 -ldflags="-X main.VERSION=${VERSION} -X main.COMMIT=${COMMIT}" -coverprofile=coverage.out ./...
 
@@ -114,10 +117,10 @@ db-down:
 console:
 	docker exec -t -i statping /bin/sh
 
-compose-build-full: 
+compose-build-full:
 	docker compose -f docker-compose.yml -f dev/docker-compose.full.yml build --parallel --build-arg VERSION=${VERSION}
 
-docker-latest: 
+docker-latest:
 	docker build -t statping-ng/statping-ng:latest --build-arg VERSION=${VERSION} .
 
 docker-test:

@@ -583,7 +583,18 @@ func CheckHttp(s *Service, record bool) (*Service, error) {
 		log.Errorln(err)
 	}
 
-	content, res, err = utils.HttpRequest(s.Domain, s.Method, contentType, headers, data, timeout, s.VerifySSL.Bool, customTLS)
+	var retryCount int = 3
+	var backoff time.Duration = 1 * time.Second
+	for attempts := 0; attempts <= retryCount; attempts++ {
+		content, res, err = utils.HttpRequest(s.Domain, s.Method, contentType, headers, data, timeout, s.VerifySSL.Bool, customTLS)
+		if err == nil && s.ExpectedStatus != res.StatusCode {
+			// Request succeeded, break out of retry loop
+			break
+		}
+		fmt.Printf("Request to %s failed: %v. Attempt %d/%d\n", s.Domain, err, attempts+1, retryCount+1)
+		time.Sleep(backoff)
+		backoff *= 2
+	}
 	if err != nil {
 		if record {
 			RecordFailure(s, fmt.Sprintf("HTTP Error %v", err), "request")
