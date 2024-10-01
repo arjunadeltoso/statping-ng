@@ -587,7 +587,7 @@ func CheckHttp(s *Service, record bool) (*Service, error) {
 	var backoff time.Duration = 1 * time.Second
 	for attempts := 0; attempts <= retryCount; attempts++ {
 		content, res, err = utils.HttpRequest(s.Domain, s.Method, contentType, headers, data, timeout, s.VerifySSL.Bool, customTLS)
-		if err == nil && s.ExpectedStatus != res.StatusCode {
+		if err == nil && s.ExpectedStatus == res.StatusCode {
 			// Request succeeded, break out of retry loop
 			break
 		}
